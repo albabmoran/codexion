@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 12:24:52 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/25 18:32:27 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/26 20:08:37 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 static int	check_digits(char *str)
 {
-	int	i;
+	int				i;
 	unsigned long	digits;
 
 	i = 0;

@@ -6,19 +6,11 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/25 18:42:51 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 19:52:56 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/26 20:14:53 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-static uint64_t get_time(void)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * (uint64_t)1000) + (tv.tv_usec / 1000));
-}
 
 static int	init_data(t_data *data)
 {
@@ -26,7 +18,7 @@ static int	init_data(t_data *data)
 	data->stop = 0;
 	data->coders = malloc(sizeof(t_coder) * data->nb_coders);
 	if (!data->coders)
-		return(0);
+		return (0);
 	data->dongles = malloc(sizeof(t_dongle) * data->nb_coders);
 	if (!data->dongles)
 		return (0);
@@ -83,16 +75,16 @@ static int	init_dongles(t_data *data)
 static int	init_heap(t_data *data)
 {
 	data->heap.size = 0;
-    data->heap.capacity = data->nb_coders;
-    data->heap.scheduler_type = data->scheduler;
-    data->heap.requests = malloc(
-        sizeof(t_request) * data->heap.capacity);
-    if (!data->heap.requests)
-        return (0);
+	data->heap.capacity = data->nb_coders;
+	data->heap.scheduler_type = data->scheduler;
+	data->heap.requests = malloc(
+			sizeof(t_request) * data->heap.capacity);
+	if (!data->heap.requests)
+		return (0);
 	if (pthread_mutex_init(&data->heap.mutex, NULL) != 0)
 		return (0);
 	data->heap_mutex_init++;
-    return (1);
+	return (1);
 }
 
 int	initializer(t_data *data)
@@ -103,6 +95,6 @@ int	initializer(t_data *data)
 	if (!init_dongles(data))
 		return (0);
 	if (!init_heap(data))
-		return(0);
+		return (0);
 	return (1);
 }
