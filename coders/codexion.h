@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/25 18:42:46 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/26 19:52:25 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,11 @@ typedef struct	s_request
 
 typedef struct	s_heap
 {
-    t_request	*requests;
-    int			size;
-    int			capacity;
-    int			scheduler_type;
+    t_request		*requests;
+    int				size;
+    int				capacity;
+    int				scheduler_type;
+	pthread_mutex_t	mutex;
 }				t_heap;
 
 typedef struct	s_log
@@ -85,6 +86,13 @@ typedef struct	s_data
 
 	pthread_mutex_t		stop_mutex;
 	t_log_queue			logs;
+	t_heap				heap;
+
+	int					dongles_mutex_init;
+	int					stop_mutex_init;
+	int					logs_mutex_init;
+	int					logs_cond_init;
+	int					heap_mutex_init;
 
 }				t_data;
 
@@ -99,6 +107,7 @@ typedef struct	s_coder
 }				t_coder;
 
 int	parse_args(int argc, char **argv, t_data *data);
-void initializer(t_data *data);
+int initializer(t_data *data);
+void cleanup(t_data *data);
 
 #endif
