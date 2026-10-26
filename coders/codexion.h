@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:17:13 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/26 20:27:55 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,31 @@ typedef struct s_dongle
 
 }				t_dongle;
 
+typedef struct s_log
+{
+	char			*message;
+	struct s_log	*next;
+}				t_log;
+
+typedef struct s_log_queue
+{
+	t_log			*head;
+	t_log			*tail;
+	int				closed;
+	pthread_mutex_t	mutex;
+	pthread_cond_t	cond;
+}				t_log_queue;
+
+typedef struct s_coder
+{
+	int					id;
+	int					compiles_done;
+	uint64_t			last_compile_start;
+	pthread_t			thread;
+	struct s_data		*data;
+
+}				t_coder;
+
 typedef struct s_request
 {
 	t_coder		*coder;
@@ -51,21 +76,6 @@ typedef struct s_heap
 	int				scheduler_type;
 	pthread_mutex_t	mutex;
 }				t_heap;
-
-typedef struct s_log
-{
-	char			*message;
-	struct s_log	*next;
-}				t_log;
-
-typedef struct s_log_queue
-{
-	t_log			*head;
-	t_log			*tail;
-	int				closed;
-	pthread_mutex_t	mutex;
-	pthread_cond_t	cond;
-}				t_log_queue;
 
 typedef struct s_data
 {
@@ -95,16 +105,6 @@ typedef struct s_data
 	int					heap_mutex_init;
 
 }				t_data;
-
-typedef struct s_coder
-{
-	int					id;
-	int					compiles_done;
-	uint64_t			last_compile_start;
-	pthread_t			thread;
-	struct s_data		*data;
-
-}				t_coder;
 
 int		parse_args(int argc, char **argv, t_data *data);
 int		initializer(t_data *data);

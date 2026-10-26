@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 12:25:02 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:13:44 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/26 20:31:10 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,6 @@ int	main(int argc, char **argv)
 	if (!parse_args(argc, argv, data))
 		return (cleanup(data), 1);
 	if (!initializer(data))
-		return (cleaup(data), 1);
+		return (cleanup(data), 1);
 	return (cleanup(data), 0); /*luego ver bien que acaben los hilos y eso*/
 }
