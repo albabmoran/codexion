@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 12:24:52 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:08:37 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/10/28 10:28:41 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,15 +33,18 @@ static int	check_digits(char *str)
 		return (0);
 }
 
-static void	init_data(int *arg, t_data *data)
+static int	init_data(int *arg, t_data *data)
 {
 	data->nb_coders = arg[0];
+	if (data->nb_coders == 0)
+		return (0);
 	data->time_to_burnout = (uint64_t)arg[1];
 	data->time_to_compile = (uint64_t)arg[2];
 	data->time_to_debug = (uint64_t)arg[3];
 	data->time_to_refactor = (uint64_t)arg[4];
 	data->required_compiles = arg[5];
 	data->dongle_cooldown = (uint64_t)arg[6];
+	return (1);
 }
 
 static int	check_init_scheduler(char *str, t_data *data)
@@ -78,7 +81,7 @@ int	parse_args(int argc, char **argv, t_data *data)
 	}
 	if (flag && !check_init_scheduler(argv[8], data))
 		flag = 0;
-	if (flag)
-		init_data(arg, data);
+	if (flag && !init_data(arg, data))
+		flag = 0;
 	return (flag);
 }

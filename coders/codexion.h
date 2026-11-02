@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:27:55 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/02 05:58:36 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include <pthread.h>
 # include <sys/time.h> /*gettimeofday*/
 # include <unistd.h> /*usleep, write*/
-# include <stdlib.h> /*malloc, atoi*/
+# include <stdlib.h> /*malloc, atoi, free*/
 # include <stdio.h> /*printf*/
 # include <string.h> /*strcmp, strlen, memset*/
 # include <stdint.h> /*uint64_t*/
@@ -65,7 +65,6 @@ typedef struct s_request
 	t_coder		*coder;
 	uint64_t	request_time;
 	uint64_t	deadline;
-	uint64_t	sequence;
 }				t_request;
 
 typedef struct s_heap
@@ -73,8 +72,9 @@ typedef struct s_heap
 	t_request		*requests;
 	int				size;
 	int				capacity;
-	int				scheduler_type;
+	t_scheduler		scheduler;
 	pthread_mutex_t	mutex;
+	pthread_cond_t	cond;
 }				t_heap;
 
 typedef struct s_data
@@ -94,6 +94,9 @@ typedef struct s_data
 	struct s_coder		*coders;
 	struct s_dongle		*dongles;
 
+	pthread_t			printer;
+	pthread_t			monitor;
+	pthread_t			req_manager;
 	pthread_mutex_t		stop_mutex;
 	t_log_queue			logs;
 	t_heap				heap;
@@ -103,11 +106,35 @@ typedef struct s_data
 	int					logs_mutex_init;
 	int					logs_cond_init;
 	int					heap_mutex_init;
-
+	int					heap_cond_init;
+	int					cod_thread_init;
+	int					print_thread_init;
+	int					mon_thread_init;
+	int					rman_thread_init;
 }				t_data;
 
-int		parse_args(int argc, char **argv, t_data *data);
-int		initializer(t_data *data);
-void	cleanup(t_data *data);
+int			parse_args(int argc, char **argv, t_data *data);
+
+int			initializer(t_data *data);
+int			init_data(t_data *data);
+void		init_coders(t_data *data);
+int			init_dongles(t_data *data);
+int			init_heap(t_data *data);
+int			init_threads(t_data *data);
+
+uint64_t	get_time(void);
+
+void		*coder_routine(void *coder);
+void		*printer_routine(void *data);
+void		*monitor_routine(void *data);
+void		*req_manager_routine(void *data);
+
+int			priority_request(t_heap *heap, t_request *a, t_request *b);
+int			heap_push(t_heap *heap, t_request a);
+int			heap_pop(t_heap *heap, t_request *req);
+
+void		cleanup(t_data *data);
+void		end_threads(t_data *data);
+void		stop_simulation(t_data *data);
 
 #endif

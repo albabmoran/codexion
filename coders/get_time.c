@@ -6,13 +6,13 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/26 20:10:06 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:16:12 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/02 02:59:48 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static uint64_t	get_time(void)
+uint64_t	get_time(void)
 {
 	struct timeval	tv;
 

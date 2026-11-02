@@ -1,30 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   initializer.c                                      :+:      :+:    :+:   */
+/*   init_structs.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/25 18:42:51 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/26 20:35:42 by albben-a         ###   ########.fr       */
+/*   Created: 2026/11/02 00:34:02 by albben-a          #+#    #+#             */
+/*   Updated: 2026/11/02 05:59:16 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	init_data(t_data *data)
+static void	init_markers(t_data *data)
 {
 	data->start_time = 0;
 	data->stop = 0;
 	data->dongles_mutex_init = 0;
 	data->heap_mutex_init = 0;
+	data->heap_cond_init = 0;
+	data->cod_thread_init = 0;
+	data->print_thread_init = 0;
+	data->mon_thread_init = 0;
+	data->rman_thread_init = 0;
+}
+
+int	init_data(t_data *data)
+{
+	init_markers(data);
 	data->coders = malloc(sizeof(t_coder) * data->nb_coders);
 	if (!data->coders)
 		return (0);
 	data->dongles = malloc(sizeof(t_dongle) * data->nb_coders);
 	if (!data->dongles)
 		return (0);
-	if (pthread_mutex_init(&data->stop_mutex, NULL) != 0)
+	if (pthread_mutex_init(&data->stop_mutex, NULL))
 		return (0);
 	data->stop_mutex_init = 1;
 	data->logs.head = NULL;
@@ -39,7 +49,7 @@ static int	init_data(t_data *data)
 	return (1);
 }
 
-static void	init_coders(t_data *data)
+void	init_coders(t_data *data)
 {
 	int	i;
 
@@ -55,7 +65,7 @@ static void	init_coders(t_data *data)
 	return ;
 }
 
-static int	init_dongles(t_data *data)
+int	init_dongles(t_data *data)
 {
 	int	i;
 
@@ -72,11 +82,11 @@ static int	init_dongles(t_data *data)
 	return (1);
 }
 
-static int	init_heap(t_data *data)
+int	init_heap(t_data *data)
 {
 	data->heap.size = 0;
 	data->heap.capacity = data->nb_coders;
-	data->heap.scheduler_type = data->scheduler;
+	data->heap.scheduler = data->scheduler;
 	data->heap.requests = malloc(
 			sizeof(t_request) * data->heap.capacity);
 	if (!data->heap.requests)
@@ -84,17 +94,8 @@ static int	init_heap(t_data *data)
 	if (pthread_mutex_init(&data->heap.mutex, NULL) != 0)
 		return (0);
 	data->heap_mutex_init = 1;
-	return (1);
-}
-
-int	initializer(t_data *data)
-{
-	if (!init_data(data))
+	if (pthread_cond_init(&data->heap.cond, NULL) != 0)
 		return (0);
-	init_coders(data);
-	if (!init_dongles(data))
-		return (0);
-	if (!init_heap(data))
-		return (0);
+	data->heap_cond_init = 1;
 	return (1);
 }

@@ -6,7 +6,7 @@
 #    By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 13:05:58 by albben-a          #+#    #+#              #
-#    Updated: 2026/10/19 13:12:45 by albben-a         ###   ########.fr        #
+#    Updated: 2026/10/28 10:34:43 by albben-a         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ GREEN := \033[1;32m
 RESET := \033[0m
 
 CC     = cc
-FLAGS  = -Wall -Wextra -Werror
+FLAGS  = -Wall -Wextra -Werror -pthread
 
 SRC    = 
 
