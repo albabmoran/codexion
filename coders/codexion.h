@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/02 05:58:36 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/03 21:32:45 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,9 @@ typedef struct s_coder
 	int					compiles_done;
 	uint64_t			last_compile_start;
 	pthread_t			thread;
+	pthread_cond_t		cond;
+	int					auth;
+	pthread_mutex_t		request_mutex;
 	struct s_data		*data;
 
 }				t_coder;
@@ -108,6 +111,8 @@ typedef struct s_data
 	int					heap_mutex_init;
 	int					heap_cond_init;
 	int					cod_thread_init;
+	int					cod_cond_init;
+	int					cod_mutex_init;
 	int					print_thread_init;
 	int					mon_thread_init;
 	int					rman_thread_init;
