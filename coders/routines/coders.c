@@ -6,31 +6,40 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/01 23:44:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/04 00:47:31 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/04 01:33:31 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static t_request	create_push_request(t_coder *coder)
+static int	create_push_request(t_coder *coder)
 {
 	t_request	req;
 
 	req.coder = coder;
 	req.request_time = get_time();
-	req.deadline = req.request_time + coder->data->time_to_burnout;
-	heap_pus(coder->data->heap, req);
+	req.deadline = req.coder->last_compile_start + coder->data->time_to_burnout;
+	pthread_mutex_lock(&coder->data->heap.mutex);
+	if (!heap_push(&coder->data->heap, req))
+		return (0);
+	pthread_cond_broadcast(&coder->data->heap.cond);
+	pthread_mutex_unlock(&coder->data->heap.mutex);
+	return (1);
 }
 
-void	*coder_routine(void *coder)
+void	*coder_routine(void *coder_void)
 {
-	t_request	req;
+	t_coder	*coder;
 
-	coder = ((t_coder *)coder);
-	req = create_push_request(coder);
-	pthread_mutex_lock(&((t_coder *)coder)->request_mutex);
-	while (((t_coder *)coder)->auth == 0)
-		pthread_cond_wait(&((t_coder *)coder)->cond,
-			&((t_coder *)coder)->request_mutex);
+	coder = (t_coder *)coder_void;
+	if (!create_push_request(coder))
+	{
+		stop_simulation(coder->data);
+		return (NULL);
+	}
+	pthread_mutex_lock(&coder->request_mutex);
+	while (coder->auth == 0)
+		pthread_cond_wait(&coder->cond, &coder->request_mutex);
+	pthread_mutex_unlock(&coder->request_mutex);
 	return (NULL);
 }

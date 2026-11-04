@@ -6,13 +6,13 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:47:12 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/02 06:00:12 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/04 01:14:00 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void	*monitor_routine(void *data)
+void	*monitor_routine(void *data_void)
 {
 	data = (t_data *)data;
 	return (NULL);

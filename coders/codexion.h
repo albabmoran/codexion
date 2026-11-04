@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/03 21:32:45 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/04 01:13:13 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,10 +129,10 @@ int			init_threads(t_data *data);
 
 uint64_t	get_time(void);
 
-void		*coder_routine(void *coder);
-void		*printer_routine(void *data);
-void		*monitor_routine(void *data);
-void		*req_manager_routine(void *data);
+void		*coder_routine(void *coder_void);
+void		*printer_routine(void *data_void);
+void		*monitor_routine(void *data_void);
+void		*req_manager_routine(void *data_void);
 
 int			priority_request(t_heap *heap, t_request *a, t_request *b);
 int			heap_push(t_heap *heap, t_request a);

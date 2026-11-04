@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 03:39:42 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/02 05:57:35 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/04 01:10:42 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,18 +42,12 @@ static void	heap_down(t_heap *heap, int idx)
 		left = 2 * idx + 1;
 		right = 2 * idx + 2;
 		temp = idx;
-		if (left < heap->size)
-		{
-			if (priority_request(heap, &heap->requests[left],
-					&heap->requests[temp]))
-				temp = left;
-		}
-		if (right < heap->size)
-		{
-			if (priority_request(heap, &heap->requests[right],
-					&heap->requests[temp]))
-				temp = right;
-		}
+		if ((left < heap->size) && priority_request(heap,
+				&heap->requests[left], &heap->requests[temp]))
+			temp = left;
+		if ((right < heap->size) && priority_request(heap,
+				&heap->requests[right], &heap->requests[temp]))
+			temp = right;
 		if (idx == temp)
 			break ;
 		swap_requests(&heap->requests[temp], &heap->requests[idx]);
