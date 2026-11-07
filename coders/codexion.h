@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/04 01:13:13 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/07 02:36:05 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef enum s_scheduler
 typedef struct s_dongle
 {
 	int					id;
+	int					in_use;
 	uint64_t			available_at;
 	pthread_mutex_t		mutex;
 
@@ -137,6 +138,7 @@ void		*req_manager_routine(void *data_void);
 int			priority_request(t_heap *heap, t_request *a, t_request *b);
 int			heap_push(t_heap *heap, t_request a);
 int			heap_pop(t_heap *heap, t_request *req);
+int			heap_peek(t_heap *heap, t_request *req);
 
 void		cleanup(t_data *data);
 void		end_threads(t_data *data);

@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 03:39:42 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/04 01:10:42 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/07 02:37:30 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,12 @@ int	heap_push(t_heap *heap, t_request a)
 		return (1);
 	}
 	return (0);
+}
+
+int heap_peek(t_heap *heap, t_request *req)
+{
+	if (heap->size == 0)
+		return (0);
+	*req = heap->requests[0];
+	return (1);
 }

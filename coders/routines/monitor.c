@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:47:12 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/04 01:14:00 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/04 03:43:51 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,6 @@
 
 void	*monitor_routine(void *data_void)
 {
-	data = (t_data *)data;
+	data = (t_data *)data_void;
 	return (NULL);
 }

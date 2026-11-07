@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:34:02 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/03 13:19:15 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/07 00:54:22 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ int	init_dongles(t_data *data)
 	{
 		data->dongles[i].id = i + 1;
 		data->dongles[i].available_at = 0;
+		data->dongles[i].in_use = 0;
 		if (pthread_mutex_init(&data->dongles[i].mutex, NULL) != 0)
 			return (0);
 		data->dongles_mutex_init++;
