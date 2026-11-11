@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/07 02:36:05 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/11 21:08:52 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,21 @@
 
 # include <pthread.h>
 # include <sys/time.h> /*gettimeofday*/
+# include <time.h>
 # include <unistd.h> /*usleep, write*/
 # include <stdlib.h> /*malloc, atoi, free*/
 # include <stdio.h> /*printf*/
 # include <string.h> /*strcmp, strlen, memset*/
 # include <stdint.h> /*uint64_t*/
+
+# define RESET       "\033[0m"
+# define RED         "\033[31m"
+# define GREEN       "\033[32m"
+# define YELLOW      "\033[33m"
+# define BLUE        "\033[34m"
+# define MAGENTA     "\033[35m"
+# define CYAN        "\033[36m"
+# define WHITE       "\033[37m"
 
 typedef enum s_scheduler
 {
@@ -38,7 +48,9 @@ typedef struct s_dongle
 
 typedef struct s_log
 {
-	char			*message;
+	uint64_t		timestamp;
+	int				coder_id;
+	const char		*message;
 	struct s_log	*next;
 }				t_log;
 
@@ -56,6 +68,7 @@ typedef struct s_coder
 	int					id;
 	int					compiles_done;
 	uint64_t			last_compile_start;
+	const char			*color;
 	pthread_t			thread;
 	pthread_cond_t		cond;
 	int					auth;
@@ -101,12 +114,10 @@ typedef struct s_data
 	pthread_t			printer;
 	pthread_t			monitor;
 	pthread_t			req_manager;
-	pthread_mutex_t		stop_mutex;
 	t_log_queue			logs;
 	t_heap				heap;
 
 	int					dongles_mutex_init;
-	int					stop_mutex_init;
 	int					logs_mutex_init;
 	int					logs_cond_init;
 	int					heap_mutex_init;
@@ -123,25 +134,45 @@ int			parse_args(int argc, char **argv, t_data *data);
 
 int			initializer(t_data *data);
 int			init_data(t_data *data);
-void		init_coders(t_data *data);
+int			init_coders(t_data *data);
 int			init_dongles(t_data *data);
 int			init_heap(t_data *data);
 int			init_threads(t_data *data);
 
 uint64_t	get_time(void);
+int			wait_time(t_coder *coder, uint64_t duration);
+void		wait_manager(t_data *data, int pending_count);
 
 void		*coder_routine(void *coder_void);
+int			compile(t_coder *coder);
+int			debug(t_coder *coder);
+int			refactor(t_coder *coder);
+
 void		*printer_routine(void *data_void);
+int			log_event(t_data *data, int coder_id, const char *message);
+
 void		*monitor_routine(void *data_void);
+
 void		*req_manager_routine(void *data_void);
+int			collect_requests(t_data *data, t_request *requests, int *count);
+int			process_requests(t_data *data, t_request *requests,
+				int count, int *pending);
+int			requeue_requests(t_data *data, t_request *requests,
+				int pending_count, int granted_count);
+
+void		cancel_dongles(t_coder *coder);
+void		release_dongles(t_coder *coder);
+int			grant_dongles(t_request *req, t_data *data);
 
 int			priority_request(t_heap *heap, t_request *a, t_request *b);
 int			heap_push(t_heap *heap, t_request a);
 int			heap_pop(t_heap *heap, t_request *req);
-int			heap_peek(t_heap *heap, t_request *req);
 
 void		cleanup(t_data *data);
 void		end_threads(t_data *data);
+
 void		stop_simulation(t_data *data);
+void		complete_stop_simulation(t_data *data);
+int			is_stopped(t_data *data);
 
 #endif

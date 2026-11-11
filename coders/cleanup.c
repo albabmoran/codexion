@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/26 18:59:29 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/03 13:17:54 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/10 12:55:34 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ static void	destroy_dongles(t_data *data)
 		i++;
 	}
 	free(data->dongles);
+	data->dongles = NULL;
 }
 
 static void	destroy_coders(t_data *data)
@@ -42,6 +43,7 @@ static void	destroy_coders(t_data *data)
 		i++;
 	}
 	free(data->coders);
+	data->coders = NULL;
 }
 
 void	cleanup(t_data *data)
@@ -56,8 +58,6 @@ void	cleanup(t_data *data)
 		pthread_cond_destroy(&data->logs.cond);
 	if (data->logs_mutex_init)
 		pthread_mutex_destroy(&data->logs.mutex);
-	if (data->stop_mutex_init)
-		pthread_mutex_destroy(&data->stop_mutex);
 	if (data->heap_cond_init)
 		pthread_cond_destroy(&data->heap.cond);
 	if (data->heap_mutex_init)

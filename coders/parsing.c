@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 12:24:52 by albben-a          #+#    #+#             */
-/*   Updated: 2026/10/28 10:28:41 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/09 20:38:26 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ static int	check_digits(char *str)
 		return (0);
 }
 
-static int	init_data(int *arg, t_data *data)
+static int	init_args(int *arg, t_data *data)
 {
 	data->nb_coders = arg[0];
 	if (data->nb_coders == 0)
@@ -81,7 +81,7 @@ int	parse_args(int argc, char **argv, t_data *data)
 	}
 	if (flag && !check_init_scheduler(argv[8], data))
 		flag = 0;
-	if (flag && !init_data(arg, data))
+	if (flag && !init_args(arg, data))
 		flag = 0;
 	return (flag);
 }

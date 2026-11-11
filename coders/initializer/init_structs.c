@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:34:02 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/07 00:54:22 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/11 19:35:37 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,11 @@ static void	init_markers(t_data *data)
 	data->print_thread_init = 0;
 	data->mon_thread_init = 0;
 	data->rman_thread_init = 0;
+	data->logs_mutex_init = 0;
+	data->logs_cond_init = 0;
+	data->coders = NULL;
+	data->dongles = NULL;
+	data->heap.requests = NULL;
 }
 
 int	init_data(t_data *data)
@@ -36,9 +41,6 @@ int	init_data(t_data *data)
 	data->dongles = malloc(sizeof(t_dongle) * data->nb_coders);
 	if (!data->dongles)
 		return (0);
-	if (pthread_mutex_init(&data->stop_mutex, NULL))
-		return (0);
-	data->stop_mutex_init = 1;
 	data->logs.head = NULL;
 	data->logs.tail = NULL;
 	data->logs.closed = 0;
@@ -53,7 +55,11 @@ int	init_data(t_data *data)
 
 int	init_coders(t_data *data)
 {
-	int	i;
+	const char	*colors[] = {
+		MAGENTA, GREEN, BLUE, YELLOW,
+		RED, CYAN, WHITE
+	};
+	int			i;
 
 	i = 0;
 	while (i < data->nb_coders)
@@ -69,6 +75,7 @@ int	init_coders(t_data *data)
 		if (pthread_mutex_init(&data->coders[i].request_mutex, NULL) != 0)
 			return (0);
 		data->cod_mutex_init++;
+		data->coders[i].color = colors[i % 7];
 		i++;
 	}
 	return (1);
