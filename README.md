@@ -391,123 +391,145 @@ If both can be reserved, they are marked as in use and the coder is authorized. 
 
 Since multiple threads access shared resources, synchronization is essential to prevent race conditions and inconsistent states.
 
-The project uses POSIX mutexes and condition variables to coordinate access to shared data and communicate between concurrent threads.
+The project uses POSIX mutexes (`pthread_mutex_t`) and condition variables (`pthread_cond_t`) to coordinate access to shared data and communicate between concurrent threads. Each synchronization object is associated with a specific shared structure and protects a particular part of the simulation.
 
-### Mutexes
+### Mutexes (`pthread_mutex_t`)
 
-Mutexes protect shared resources and ensure that only one thread can modify a protected structure at a time.
+Mutexes ensure that only one thread at a time can access or modify a protected resource.
 
-They are used for:
+The project uses the following mutexes:
 
-- **Dongles:** protect availability states and cooldown timestamps.
-- **Request heap:** protect insertion, removal and access to pending requests.
-- **Coder data:** protect authorization states, compilation counters and last compilation timestamps.
-- **Log queue:** protect insertion, removal and queue state.
-- **Shared simulation state:** coordinate access to data that must remain consistent.
+| Mutex | Associated structure | Purpose |
+|---|---|---|
+| `t_dongle.mutex` | `t_dongle` | Protects each dongle's `in_use` and `available_at` fields. |
+| `t_heap.mutex` | `t_heap` | Protects the priority heap, pending requests and access to the shared stop state. |
+| `t_coder.request_mutex` | `t_coder` | Protects coder-specific shared information, including `auth`, `compiles_done` and `last_compile_start`. |
+| `t_log_queue.mutex` | `t_log_queue` | Protects the log queue, including its head, tail and closed state. |
 
-When a coder needs two dongles, their mutexes are locked in ascending dongle ID order.
+These mutexes prevent simultaneous modifications from different threads.
 
-Both dongles are checked and reserved while their mutexes are held. This prevents another thread from modifying their state during the reservation process and avoids circular wait between threads attempting to acquire dongles.
+For example:
 
-### Condition Variables
+- **Dongle management:** before checking or changing the availability of a dongle, the corresponding `t_dongle.mutex` must be locked.
+- **Request management:** insertion and removal operations on the binary heap are protected by `t_heap.mutex`, preventing concurrent modifications from corrupting the heap.
+- **Coder state:** the coder's `request_mutex` protects shared fields such as its authorization state and compilation counter when they are accessed by different threads.
+- **Simulation state:** the heap mutex also protects access to the shared stop state, ensuring that the monitor and other threads observe consistent shutdown information.
+- **Logging:** the log queue mutex protects event insertion, removal and queue closure.
+
+When two dongles are required, their mutexes are locked in ascending dongle ID order. Both dongles are checked and reserved while their mutexes are held. This prevents another thread from modifying their state during the reservation process and avoids circular wait between threads attempting to acquire dongles.
+
+### Condition Variables (`pthread_cond_t`)
 
 Condition variables allow threads to wait until a specific event occurs instead of continuously checking a condition.
 
-They are used to coordinate:
+The project uses condition variables associated with the following structures:
 
-- Coders waiting for authorization.
-- The request manager waiting for new requests or resource availability.
-- The printer waiting for new log events.
+| Condition variable | Associated structure | Purpose |
+|---|---|---|
+| `t_coder.cond` | `t_coder` | Wakes a coder when the request manager grants or cancels its request. |
+| `t_heap.cond` | `t_heap` | Notifies the request manager when requests arrive, resources become available or the simulation is stopping. |
+| `t_log_queue.cond` | `t_log_queue` | Wakes the printer when new log events are added or the queue is closed. |
 
-Condition variables are used together with mutexes. Waiting threads recheck the relevant condition after waking up, since a signal does not necessarily mean that the requested resource is available.
+Condition variables are always used together with their corresponding mutexes. A waiting thread checks its condition while holding the mutex and waits atomically, releasing the mutex until it is signalled.
+
+After waking up, the thread checks the condition again. This is important because a signal does not necessarily mean that the resource or event it was waiting for is still available.
 
 ### Coder Authorization
 
-Each coder has an authorization state and a dedicated condition variable.
+Each coder has an authorization state (`auth`), a request mutex (`request_mutex`) and a dedicated condition variable (`cond`).
 
-The request manager updates the authorization state and signals the corresponding coder when both dongles have been reserved.
+The request manager updates the coder's authorization state while protecting it with the request mutex. It then signals the coder's condition variable.
 
 The coder waits until it receives authorization, consumes that authorization and proceeds with compilation.
 
-During shutdown, waiting coders receive a cancellation state and are notified so they do not remain blocked indefinitely.
+This mechanism prevents a coder from starting a compilation before both dongles have been reserved.
+
+During shutdown, waiting coders receive a cancellation state (`auth = -1`) and are notified through their condition variables. This allows them to leave their waiting state instead of remaining blocked indefinitely.
 
 ### Thread-Safe Logging
 
-Logging is handled by a dedicated printer thread.
+Logging is handled by a dedicated printer thread using a producer-consumer queue.
 
-Other threads do not print events directly. Instead, they create log entries and append them to a shared queue.
+Other threads act as producers: they create log entries and append them to the shared `t_log_queue`, protected by `t_log_queue.mutex`.
 
-The queue is protected by a mutex, while a condition variable notifies the printer when new events are available.
+The printer acts as the consumer. It waits on `t_log_queue.cond` when the queue is empty, removes the next available event and prints it.
 
-This ensures that only one thread writes simulation output at a time, preventing interleaved log messages and keeping printing operations separate from the main simulation logic.
+When a new event is inserted, the producer signals the condition variable to wake the printer. When the queue is closed, the printer is notified so it can finish processing and exit.
+
+Since only the printer thread writes the simulation output, log messages are serialized and cannot be interleaved by concurrent coder, manager or monitor threads.
 
 ---
 
 ## Blocking Cases Handled
 
-The project addresses several synchronization problems that can occur when multiple threads compete for limited resources.
+The project addresses several synchronization and resource-management problems that can occur when multiple threads compete for limited resources. Each mechanism aims to keep the simulation consistent, prevent threads from becoming permanently blocked and ensure that shared resources are managed safely.
 
 ### Deadlocks
 
-A deadlock can occur when multiple threads hold resources while waiting indefinitely for resources held by one another.
+A deadlock occurs when two or more threads wait indefinitely for resources held by one another.
 
-The four Coffman conditions are:
+The four Coffman conditions that can lead to deadlocks are:
 
 1. **Mutual exclusion:** a resource can only be used by one thread at a time.
 2. **Hold and wait:** a thread holds resources while waiting for additional ones.
 3. **No preemption:** resources cannot be forcibly taken away from a thread.
 4. **Circular wait:** threads form a circular chain of resource dependencies.
 
-The project prevents circular wait during dongle acquisition by locking both dongle mutexes in ascending ID order.
+The project prevents circular wait during dongle acquisition by locking both dongle mutexes in ascending dongle ID order.
 
-Both dongles are checked and reserved while their mutexes are held. This avoids a situation in which a coder acquires one dongle and waits indefinitely for the other.
+Both dongles are checked and reserved while their mutexes are held. A coder never acquires one dongle and then waits while holding it for the second one. This avoids circular dependencies between coders competing for adjacent dongles.
 
 ### Starvation
 
 Starvation occurs when a thread repeatedly fails to obtain the resources it needs because other threads are continually prioritized.
 
-The request manager uses a priority queue to establish a defined request order:
+The request manager uses a binary heap to establish a defined order for processing pending requests. The selected scheduling policy determines which request is considered first:
 
-- FIFO prioritizes older requests.
-- EDF prioritizes requests with earlier deadlines.
+- **FIFO:** prioritizes requests according to their arrival time.
+- **EDF:** prioritizes requests with the earliest burnout deadline, calculated as `last_compile_start + time_to_burnout`.
 
-These policies provide explicit arbitration between competing requests. However, they do not constitute an unconditional mathematical guarantee against starvation under every possible simulation configuration.
+This provides an explicit arbitration mechanism instead of allowing coders to compete for dongles without coordination. However, these scheduling policies do not constitute an unconditional mathematical guarantee against starvation under every possible simulation configuration.
 
 ### Dongle Cooldown
 
-After a compilation, both dongles are released and assigned an `available_at` timestamp.
+The cooldown mechanism prevents a dongle from being reused immediately after it has been released.
 
-A dongle can only be reserved when:
+When a coder finishes compiling, both dongles are released and assigned an `available_at` timestamp based on the current time and the configured `dongle_cooldown`.
 
-- It is not currently in use.
-- Its cooldown timestamp has been reached.
+Before granting a request, the request manager checks both dongles while holding their mutexes. A dongle can only be reserved when:
 
-The request manager checks both conditions before granting a request.
+- Its `in_use` state indicates that it is free.
+- Its `available_at` timestamp has been reached.
 
-This prevents a coder from using a dongle before its cooldown period has elapsed.
+If either dongle is still in use or cooling down, the request cannot be granted and is returned to the priority queue for later processing.
+
+This ensures that the cooldown period is respected without allowing multiple coders to reserve the same dongle simultaneously.
 
 ### Burnout
 
-A coder burns out when it exceeds the configured time limit without starting another compilation.
+Burnout occurs when a coder exceeds the configured time limit without starting another compilation.
 
-The monitor periodically checks each coder's last compilation start timestamp.
+A dedicated monitor thread periodically checks each coder's state and last compilation start timestamp. The elapsed time is compared against `time_to_burnout`, while coders that have already completed their required number of compilations are excluded from burnout detection.
 
-If the elapsed time reaches the burnout limit and the coder has not finished its required compilations, the monitor:
+When a burnout is detected, the monitor:
 
 1. Logs the burnout event.
-2. Sets the simulation stop state.
-3. Notifies the request manager and waiting threads.
-4. Initiates the shutdown process.
+2. Sets the shared simulation stop state.
+3. Notifies the request manager through the heap condition variable.
+4. Wakes waiting coders by updating their authorization state and signalling their condition variables.
+5. Initiates the shutdown process.
 
-The monitor checks at short intervals, although actual detection timing can be affected by operating-system thread scheduling.
+The monitor checks at short intervals (`usleep(500)`), aiming to detect burnout promptly. Actual detection and log timing can still be affected by operating-system thread scheduling.
 
 ### Log Serialization
 
-Multiple threads can generate events at nearly the same time.
+Multiple threads can generate events at nearly the same time. If they printed directly to standard output, their messages could overlap or become mixed.
 
-To prevent output from becoming mixed or corrupted, all log events are inserted into a synchronized queue and processed by a single printer thread.
+To avoid this, the project uses a shared log queue protected by `t_log_queue.mutex` and coordinated through `t_log_queue.cond`.
 
-This guarantees serialized output and keeps logging operations thread-safe.
+Each thread inserts its events into the queue instead of printing them directly. A single printer thread removes the events and writes them to standard output sequentially.
+
+This producer-consumer approach ensures that log messages remain complete and ordered according to their insertion into the queue, preventing concurrent threads from interleaving output.
 
 ---
 
