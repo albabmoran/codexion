@@ -2,6 +2,18 @@
 
 # Codexion
 
+<div align="center">
+  <table>
+    <tr>
+      <td>
+        <img src="codexion.png" alt="project demonstration" width="400" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+
 ## Table of Contents
 
 - [Description](#description)
