@@ -6,7 +6,7 @@
 #    By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 13:05:58 by albben-a          #+#    #+#              #
-#    Updated: 2026/11/11 21:13:17 by albben-a         ###   ########.fr        #
+#    Updated: 2026/11/16 18:05:29 by albben-a         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ GREEN := \033[1;32m
 RESET := \033[0m
 
 CC     = cc
-FLAGS  = -Wall -Wextra -Werror -pthread
+FLAGS  = -Wall -Wextra -Werror -pthread -g 
 INCLUDES = -Icoders
 
 SRC    = 	coders/main.c\
@@ -40,7 +40,7 @@ SRC    = 	coders/main.c\
 
 OBJ    = $(SRC:.c=.o)
 
-all: $(NAME)
+all: $(NAME) clean
 
 $(NAME): $(OBJ)
 	@$(CC) $(FLAGS) $(OBJ) -o $(NAME)
