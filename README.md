@@ -454,9 +454,11 @@ Other threads act as producers: they create log entries and append them to the s
 
 The printer acts as the consumer. It waits on `t_log_queue.cond` when the queue is empty, removes the next available event and prints it.
 
-When a new event is inserted, the producer signals the condition variable to wake the printer. When the queue is closed, the printer is notified so it can finish processing and exit.
+When a new event is inserted, the producer signals the condition variable to wake the printer. When the simulation ends, the log queue is closed and the printer is notified.
 
-Since only the printer thread writes the simulation output, log messages are serialized and cannot be interleaved by concurrent coder, manager or monitor threads.
+A dedicated `log_event_and_close()` function handles burnout events. It inserts the burnout message into the queue and marks the queue as closed while holding the log mutex. This ensures that the final burnout message is queued before the printer is notified that no more events will be accepted.
+
+The printer continues processing any remaining events before exiting. Since only the printer thread writes the simulation output, log messages are serialized and cannot be interleaved by concurrent coder, manager or monitor threads.
 
 ---
 
@@ -513,13 +515,15 @@ A dedicated monitor thread periodically checks each coder's state and last compi
 
 When a burnout is detected, the monitor:
 
-1. Logs the burnout event.
+1. Calls `log_event_and_close()` to enqueue the burnout message and close the log queue.
 2. Sets the shared simulation stop state.
 3. Notifies the request manager through the heap condition variable.
 4. Wakes waiting coders by updating their authorization state and signalling their condition variables.
 5. Initiates the shutdown process.
 
-The monitor checks at short intervals (`usleep(500)`), aiming to detect burnout promptly. Actual detection and log timing can still be affected by operating-system thread scheduling.
+The `log_event_and_close()` function ensures that the burnout event is added before the printer queue is closed. The printer can therefore process the final message and all previously queued events before terminating.
+
+The monitor checks at short intervals using `usleep(100)`, aiming to detect burnout more frequently. Actual detection and log timing can still be affected by operating-system thread scheduling.
 
 ### Log Serialization
 

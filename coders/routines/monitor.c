@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:47:12 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/16 18:12:53 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:44:12 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ static int	check_burnout(t_data *data)
 	{
 		if (check_coder_status(&data->coders[i], data))
 		{
-			log_event(data, data->coders[i].id, "burned out");
+			log_event_and_close(data, data->coders[i].id, "burned out");
 			data->stop = 1;
 			pthread_cond_broadcast(&data->heap.cond);
 			should_stop = 1;

@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 02:51:42 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/11 21:12:29 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:48:10 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@ int	priority_request(t_heap *heap, t_request *a, t_request *b)
 	else
 		return (a->deadline <= b->deadline);
 }
-
-
 
 static int	manage_requests(t_data *data, t_request *requests)
 {

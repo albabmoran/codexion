@@ -6,11 +6,40 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 00:43:38 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/11 19:42:47 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:42:45 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+int	log_event_and_close(t_data *data, int coder_id,
+		const char *message)
+{
+	t_log	*log;
+	int		accepted;
+
+	log = malloc(sizeof(t_log));
+	pthread_mutex_lock(&data->logs.mutex);
+	accepted = (!data->logs.closed && log != NULL);
+	if (accepted)
+	{
+		log->timestamp = get_time() - data->start_time;
+		log->coder_id = coder_id;
+		log->message = message;
+		log->next = NULL;
+		if (data->logs.tail == NULL)
+			data->logs.head = log;
+		else
+			data->logs.tail->next = log;
+		data->logs.tail = log;
+	}
+	data->logs.closed = 1;
+	pthread_cond_broadcast(&data->logs.cond);
+	pthread_mutex_unlock(&data->logs.mutex);
+	if (!accepted)
+		free(log);
+	return (accepted);
+}
 
 int	log_event(t_data *data, int coder_id, const char *message)
 {

@@ -6,7 +6,7 @@
 /*   By: albben-a <albben-a@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 13:31:57 by albben-a          #+#    #+#             */
-/*   Updated: 2026/11/11 21:08:52 by albben-a         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:43:35 by albben-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,8 @@ int			refactor(t_coder *coder);
 
 void		*printer_routine(void *data_void);
 int			log_event(t_data *data, int coder_id, const char *message);
+int			log_event_and_close(t_data *data, int coder_id,
+				const char *message);
 
 void		*monitor_routine(void *data_void);
 
